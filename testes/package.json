@@ -1,0 +1,11 @@
+{
+  "name": "anamnese-functions",
+  "version": "1.0.0",
+  "description": "Projeto Anamnese Fisioterapia - API para cloud firebase functions",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Orlando Burli",
+  "license": "ISC"
+}
