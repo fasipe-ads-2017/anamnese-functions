@@ -1,12 +1,12 @@
 {
-  "name": "formulario",
+  "name": "usuario",
   "version": "1.0.0",
-  "description": "Microserviço para tratar dados de formulários da anamnese",
+  "description": "Microserviço para tratar dados de usuário",
   "main": "lib/index.js",
   "scripts": {
     "test": "npm test",
     "build": "rm -rf lib/ && `yarn bin`/babel index.js --out-dir ./lib",
-    "deploy": "yarn build && gcloud beta functions deploy formulario --entry-point handler --trigger-http --stage-bucket burli-functions-01 --memory=128MB --runtime=nodejs8"
+    "deploy": "yarn build && gcloud beta functions deploy usuario --entry-point handler --trigger-http --stage-bucket burli-functions-01 --memory=128MB --runtime=nodejs8"
   },
   "author": "Orlando Burli",
   "license": "ISC",

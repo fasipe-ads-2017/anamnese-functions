@@ -43,27 +43,6 @@ exports.handler = (req, res) => {
     }
 };
 
-const salvar = (req, res) => {
-    let insert = req.method == 'POST';
-
-    let formulario = req.body;
-
-    formulario._id = insert ? uuidv4() : formulario._id;
-    formulario.data = insert ? new Date() : formulario.data;
-
-    return connectMongoDB()
-        .then(client =>
-            client
-                .db(dbName)
-                .collection(collectionName)
-                .updateOne({ _id: formulario._id }, { $set: formulario }, { upsert: true })
-                .then(result => client)
-        )
-        .then(db => db.close())
-        .then(() => res.json({ result: 'ok' }))
-        .catch(err => res.status(400).send({ message: err.toString() }));
-}
-
 const isIdQuery = (req) => {
     return req.query._id !== undefined;
 }
@@ -72,37 +51,99 @@ const isIdPaciente = (req) => {
     return req.query._idPaciente !== undefined;
 }
 
+const salvar = (req, res) => {
+    return autenticar(req, res)
+        .then((usuario) => {
+            let insert = req.method == 'POST';
+
+            let formulario = req.body;
+
+            formulario._id = insert ? uuidv4() : formulario._id;
+            formulario.data = insert ? new Date() : formulario.data;
+
+            return connectMongoDB()
+                .then(client =>
+                    client
+                        .db(dbName)
+                        .collection(collectionName)
+                        .updateOne({ _id: formulario._id }, { $set: formulario }, { upsert: true })
+                        .then(result => client)
+                )
+                .then(db => db.close())
+                .then(() => res.json({ result: 'ok' }))
+                .catch(err => res.status(400).send({ message: err.toString() }));
+        }).catch((err) => {
+            console.log(`Erro ao buscar usuário: ${err.toString()}`);
+            res.status(403).send({ message: 'Acesso negado' });
+        });
+}
+
 const findById = (req, res) => {
-    return connectMongoDB()
-        .then(client =>
-            client
-                .db(dbName)
-                .collection(collectionName)
-                .find({ _id: req.query._id })
-                .toArray()
-                .then(formularios => ({ db: client, formularios: formularios }))
-                .then(({ db, formularios }) => {
-                    db.close();
-                    return formularios
-                })
-                .then(formularios => formularios.length > 0 ? formularios[0] : undefined)
-                .then(formularios => formularios ? res.json(formularios) : res.status(404).send({ message: `Formulário não encontrado com o id ${req.query._id}` })))
-        .catch(err => res.status(400).send({ message: err.toString() }));
+    return autenticar(req, res)
+        .then((usuario) => {
+            return connectMongoDB()
+                .then(client =>
+                    client
+                        .db(dbName)
+                        .collection(collectionName)
+                        .find({ _id: req.query._id })
+                        .toArray()
+                        .then(formularios => ({ db: client, formularios: formularios }))
+                        .then(({ db, formularios }) => {
+                            db.close();
+                            return formularios
+                        })
+                        .then(formularios => formularios.length > 0 ? formularios[0] : undefined)
+                        .then(formularios => formularios ? res.json(formularios) : res.status(404).send({ message: `Formulário não encontrado com o id ${req.query._id}` })))
+                .catch(err => res.status(400).send({ message: err.toString() }));
+        }).catch((err) => {
+            console.log(`Erro ao buscar usuário: ${err.toString()}`);
+            res.status(403).send({ message: 'Acesso negado' });
+        });
 }
 
 const findByIdPaciente = (req, res) => {
-    return connectMongoDB()
-        .then(client =>
-            client
-                .db(dbName)
-                .collection(collectionName)
-                .find({ _idPaciente: req.query._idPaciente })
-                .toArray()
-                .then(formularios => ({ db: client, formularios: formularios }))
-                .then(({ db, formularios }) => {
-                    db.close();
-                    return formularios;
-                })
-                .then((formularios) => res.json(formularios)))
-        .catch(err => res.status(400).send({ message: err.toString() }));
+    return autenticar(req, res)
+        .then((usuario) => {
+            return connectMongoDB()
+                .then(client =>
+                    client
+                        .db(dbName)
+                        .collection(collectionName)
+                        .find({ _idPaciente: req.query._idPaciente })
+                        .toArray()
+                        .then(formularios => ({ db: client, formularios: formularios }))
+                        .then(({ db, formularios }) => {
+                            db.close();
+                            return formularios;
+                        })
+                        .then((formularios) => res.json(formularios)))
+                .catch(err => res.status(400).send({ message: err.toString() }));
+        }).catch((err) => {
+            console.log(`Erro ao buscar usuário: ${err.toString()}`);
+            res.status(403).send({ message: 'Acesso negado' });
+        });
+}
+
+const autenticar = (req, res) => {
+    if (req.headers && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+        const token = req.headers.authorization.substr(7);
+        return findUsuarioByToken(token);
+    } else {
+        res.status(403).send({ message: 'Token não informado na requisição!' });
+    }
+}
+
+const findUsuarioByToken = (token) => {
+    return new Promise((resolve, reject) => {
+        connectMongoDB()
+            .then(client =>
+                client
+                    .db(dbName)
+                    .collection('usuario')
+                    .findOne({ token: token })
+                    .then((usuario) => usuario ? resolve(usuario) : reject(`Usuário não encontrado com o token ${token}`))
+                    .catch((err) => reject(err))
+            ).catch(err => reject(err));
+    });
 }

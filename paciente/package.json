@@ -1,12 +1,12 @@
 {
-  "name": "foto",
+  "name": "paciente",
   "version": "1.0.0",
-  "description": "Microserviço para tratar a foto de um paciente",
+  "description": "Microserviço para tratar dos dados do paciente.",
   "main": "lib/index.js",
   "scripts": {
     "test": "npm test",
     "build": "rm -rf lib/ && `yarn bin`/babel index.js --out-dir ./lib",
-    "deploy": "yarn build && gcloud beta functions deploy foto --entry-point handler --trigger-http --stage-bucket burli-functions-01 --memory=128MB --runtime=nodejs8"
+    "deploy": "yarn build && gcloud beta functions deploy paciente --entry-point handler --trigger-http --stage-bucket burli-functions-01 --memory=128MB --runtime=nodejs8"
   },
   "author": "Orlando Burli",
   "license": "ISC",
