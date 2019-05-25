@@ -16,7 +16,7 @@ exports.handler = (req, res) => {
 
     res.set('Access-Control-Allow-Origin', '*');
     res.set('Access-Control-Allow-Methods', 'GET,PUT,DELETE,POST,OPTIONS');
-    res.set('Access-Control-Allow-Headers', 'Content-Type');
+    res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     res.set('Access-Control-Max-Age', '3600');
 
     if (req.method === 'OPTIONS') {
@@ -107,7 +107,7 @@ const createPaciente = (req, res) => {
                     .then(result => client)
                 )
                 .then(db => db.close())
-                .then(() => res.json({ result: 'ok', _id: paciente._id }))
+                .then(() => res.json({ result: 'ok', paciente: paciente }))
                 .catch(err => res.status(400).send({ message: err.toString() }));
         }).catch((err) => {
             console.log(`Erro ao buscar usuário: ${err.toString()}`);

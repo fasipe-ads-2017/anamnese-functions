@@ -14,7 +14,7 @@ exports.handler = (req, res) => {
 
     res.set('Access-Control-Allow-Origin', '*');
     res.set('Access-Control-Allow-Methods', 'GET,PUT,DELETE,POST,OPTIONS');
-    res.set('Access-Control-Allow-Headers', 'Content-Type');
+    res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     res.set('Access-Control-Max-Age', '3600');
 
     if (req.method === 'OPTIONS') {
@@ -60,6 +60,7 @@ const salvar = (req, res) => {
 
             formulario._id = insert ? uuidv4() : formulario._id;
             formulario.data = insert ? new Date() : formulario.data;
+            formulario.usuario = { nome: usuario.nome, email: usuario.email };
 
             return connectMongoDB()
                 .then(client =>
