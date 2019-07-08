@@ -67,11 +67,11 @@ const validarPaciente = (req, res) => {
     paciente._id = insert ? uuidv4() : paciente._id;
 
     if (!paciente) {
-        resultadoValidacao.errors.push({ 'geral': 'Dados do paciente não enviados!' });
+        resultadoValidacao.errors.push('Dados do paciente não enviados!');
     }
 
     if (!paciente.nome || !paciente.nome.trim()) {
-        resultadoValidacao.errors.push({ 'nome': 'Nome do paciente não informado!' });
+        resultadoValidacao.errors.push('Nome do paciente não informado!');
     }
 
     // TODO Validar se é um insert, e se o CPF já existe
@@ -226,6 +226,7 @@ const findByNome = (req, res) => {
                         .db(dbName)
                         .collection(collectionName)
                         .find({ nome: { $regex: `.*${req.query.nome}.*`, $options: 'si' } })
+                        .sort({ nome: 1 })
                         .limit(pageSize)
                         .skip(skip)
                         .toArray()
@@ -247,7 +248,6 @@ const autenticar = (req, res) => {
         const token = req.headers.authorization.substr(7);
         return findUsuarioByToken(token);
     } else {
-        // res.status(403).send({ message: 'Token não informado na requisição!' });
         return new Promise((resolve, reject) => reject('Token não informado na requisição!'));
     }
 }
@@ -260,7 +260,7 @@ const findUsuarioByToken = (token) => {
                     .db(dbName)
                     .collection('usuario')
                     .findOne({ token: token })
-                    .then((usuario) => usuario ? resolve(usuario) : reject(`Usuário não encontrado com o token ${token}`))
+                    .then((usuario) => usuario && usuario.ativo ? resolve(usuario) : reject(`Usuário não encontrado com o token ${token}`))
                     .catch((err) => reject(err))
             ).catch(err => reject(err));
     });

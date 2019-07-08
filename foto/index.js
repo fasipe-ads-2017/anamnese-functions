@@ -106,7 +106,7 @@ const findUsuarioByToken = (token) => {
                     .db(dbName)
                     .collection('usuario')
                     .findOne({ token: token })
-                    .then((usuario) => usuario ? resolve(usuario) : reject(`Usuário não encontrado com o token ${token}`))
+                    .then((usuario) => usuario && usuario.ativo ? resolve(usuario) : reject(`Usuário não encontrado com o token ${token}`))
                     .catch((err) => reject(err))
             ).catch(err => reject(err));
     });
